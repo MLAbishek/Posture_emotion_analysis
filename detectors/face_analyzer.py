@@ -73,11 +73,22 @@ class FaceAnalyzer:
         # 1. Happiness: mouthSmileLeft + mouthSmileRight
         happiness = (scores.get('mouthSmileLeft', 0) + scores.get('mouthSmileRight', 0)) / 2.0
         
-        # 2. Sadness: mouthFrownLeft + mouthFrownRight
-        sadness = (scores.get('mouthFrownLeft', 0) + scores.get('mouthFrownRight', 0)) / 2.0
+        # 2. Sadness: mouthFrownLeft + mouthFrownRight + browInnerUp (Weighted)
+        # Boost mouthFrown to allow detection even if brows are covered/not moving much.
+        sadness_mouth = (scores.get('mouthFrownLeft', 0) + scores.get('mouthFrownRight', 0)) / 2.0
+        sadness_brows = scores.get('browInnerUp', 0)
+        sadness = (sadness_mouth * 2.0 + sadness_brows) / 3.0
         
-        # 3. Surprise: browInnerUp + jawOpen
-        surprise = (scores.get('browInnerUp', 0) + scores.get('jawOpen', 0)) / 2.0
+        # 3. Surprise: browOuterUpLeft + browOuterUpRight + jawOpen
+        # Require significant jaw openness.
+        jaw_open = scores.get('jawOpen', 0)
+        brows_up = (scores.get('browOuterUpLeft', 0) + scores.get('browOuterUpRight', 0)) / 2.0
+        
+        # Stricter check: Mouth MUST be open to count as surprise
+        if jaw_open < 0.25: 
+            surprise = 0 
+        else:
+            surprise = (brows_up + jaw_open) / 2.0
         
         # 4. Neutral (if everything is low) or specific logic.
         
@@ -91,9 +102,12 @@ class FaceAnalyzer:
         dominant_emotion = max(emotions, key=emotions.get)
         confidence = emotions[dominant_emotion]
         
-        if confidence < 0.1: # Threshold for "Neutral"
+        if confidence < 0.2: # Increased Threshold for "Neutral" to reduce noise
             dominant_emotion = "Neutral"
-            
+
+        # Debug Prints for Tuning
+        # print(f"Happy: {happiness:.2f} | Sad: {sadness:.2f} | Surprise: {surprise:.2f} | Jaw: {jaw_open:.2f} | BrowsUp: {brows_up:.2f} | BrowInner: {sadness_brows:.2f}")
+
         return {
             "dominant_emotion": dominant_emotion,
             "confidence": confidence,

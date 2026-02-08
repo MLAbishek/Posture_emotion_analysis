@@ -1,7 +1,7 @@
 import cv2
 
 # Thresholds
-EAR_THRESHOLD = 0.25  # Eye Aspect Ratio threshold for drowsiness
+EAR_THRESHOLD = 0.15  # Eye Aspect Ratio threshold for drowsiness
 EAR_CONSECUTIVE_FRAMES = 20  # Number of frames below threshold to trigger alert
 
 SLOUCH_ANGLE_THRESHOLD = 160  # Angle threshold for neck inclination (degrees)

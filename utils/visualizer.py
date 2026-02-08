@@ -6,7 +6,7 @@ class Visualizer:
     def __init__(self):
         pass
 
-    def draw_dashboard(self, image, posture_data, fatigue_data, emotion_data=None, calibration_mode=False):
+    def draw_dashboard(self, image, posture_data, fatigue_data, emotion_data=None, calibration_mode=False, is_drowsy=False):
         """
         Draws metrics and alerts on the image.
         """
@@ -52,7 +52,6 @@ class Visualizer:
             
             cv2.putText(image, text, (x_start, y_start), config.FONT, 0.7, color, 2)
             
-            # Draw skeleton lines if needed (simplified)
             if 'l_shoulder' in posture_data:
                 p1 = tuple(map(int, posture_data['l_ear']))
                 p2 = tuple(map(int, posture_data['l_shoulder']))
@@ -63,12 +62,13 @@ class Visualizer:
         if fatigue_data:
             ear = fatigue_data['avg_ear']
             color = config.GREEN
-            if ear < config.EAR_THRESHOLD:
+            if is_drowsy:
                 color = config.RED
                 cv2.putText(image, "DROWSINESS ALERT!", (w - 350, 90), config.FONT, 1, config.RED, 2)
             
+            # Move EAR to the next line to avoid overlap with Posture info
             text = f"EAR: {ear:.2f}"
-            cv2.putText(image, text, (x_start + 300, y_start), config.FONT, 0.7, color, 2)
+            cv2.putText(image, text, (x_start, y_start + 40), config.FONT, 0.7, color, 2)
 
         # Emotion Info
         if emotion_data:
@@ -85,6 +85,7 @@ class Visualizer:
                 e_color = config.WHITE
 
             text = f"Emotion: {emotion} ({confidence:.2f})"
-            cv2.putText(image, text, (x_start, y_start + 50), config.FONT, 0.7, e_color, 2)
+            # Move Emotion to the line below EAR
+            cv2.putText(image, text, (x_start, y_start + 80), config.FONT, 0.7, e_color, 2)
 
         return image

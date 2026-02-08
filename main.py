@@ -28,6 +28,10 @@ def main():
     # Calibration State
     is_calibrated = False
     calibration_mode = True
+    
+    # Drowsiness State
+    drowsy_frame_count = 0
+    is_drowsy = False
 
     while True:
         try:
@@ -51,9 +55,6 @@ def main():
 
             # CALIBRATION LOGIC
             if calibration_mode:
-                if posture_metrics:
-                    # Provide visual feedback delay or just wait for key press
-                    pass
                 
                 # Check for 'c' press to calibrate
                 key = cv2.waitKey(5) & 0xFF
@@ -85,7 +86,24 @@ def main():
             fatigue_data = face_metrics['fatigue_data'] if face_metrics else None
             emotion_data = face_metrics['emotion_data'] if face_metrics else None
             
-            image = visualizer.draw_dashboard(image, posture_metrics, fatigue_data, emotion_data, calibration_mode=False)
+            # Drowsiness Logic (Frame Counter)
+            if fatigue_data:
+                ear = fatigue_data['avg_ear']
+                
+                if ear < config.EAR_THRESHOLD:
+                    drowsy_frame_count += 1
+                else:
+                    drowsy_frame_count = 0
+                
+                if drowsy_frame_count >= config.EAR_CONSECUTIVE_FRAMES:
+                    is_drowsy = True
+                else:
+                    is_drowsy = False
+            else:
+                drowsy_frame_count = 0
+                is_drowsy = False
+
+            image = visualizer.draw_dashboard(image, posture_metrics, fatigue_data, emotion_data, calibration_mode=False, is_drowsy=is_drowsy)
 
 
             cv2.putText(image, f"FPS: {int(fps)}", (20, 700), config.FONT, 0.7, config.GREEN, 2)
