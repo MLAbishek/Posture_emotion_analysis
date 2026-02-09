@@ -4,6 +4,7 @@ import config
 from detectors.pose_detector import PoseDetector
 from detectors.face_analyzer import FaceAnalyzer
 from utils.visualizer import Visualizer
+from utils.DataUploader import DataUploader
 
 def main():
     # Initialize Camera
@@ -14,22 +15,22 @@ def main():
     if not cap.isOpened():
         print("Error: Could not open camera.")
         return
-
-    # Initialize Detectors and Visualizer
     pose_detector = PoseDetector()
     face_analyzer = FaceAnalyzer()
     visualizer = Visualizer()
+    data_uploader = DataUploader()
+    data_uploader.start_session()
     
     prev_time = 0
 
     print("Starting Posture & Fatigue Detection... Press 'q' to quit.")
     print("Press 'c' to calibrate posture.")
 
-    # Calibration State
+
     is_calibrated = False
     calibration_mode = True
     
-    # Drowsiness State
+    
     drowsy_frame_count = 0
     is_drowsy = False
 
@@ -47,7 +48,7 @@ def main():
 
             image_shape = image.shape
 
-            # 1. Pose Detection
+            #Pose Detection
             pose_results = pose_detector.detect(image)
             posture_metrics = None
             if pose_results and pose_results.pose_landmarks:
@@ -56,7 +57,7 @@ def main():
             # CALIBRATION LOGIC
             if calibration_mode:
                 
-                # Check for 'c' press to calibrate
+                
                 key = cv2.waitKey(5) & 0xFF
                 if key == ord('c'):
                     if posture_metrics:
@@ -73,20 +74,20 @@ def main():
                 
                 if key == ord('q'):
                     break
-                continue # Skip the rest of the loop in calibration mode
+                continue 
 
-            # 2. Face Analysis (Fatigue + Emotion)
+            #Face Analysis (Fatigue & Emotion)
             face_results = face_analyzer.detect(image)
             face_metrics = None
             if face_results:
                 face_metrics = face_analyzer.analyze(face_results, image_shape)
 
-            # 3. Visualization
+            #Visualization
             # Unwrap metrics if they exist
             fatigue_data = face_metrics['fatigue_data'] if face_metrics else None
             emotion_data = face_metrics['emotion_data'] if face_metrics else None
-            
-            # Drowsiness Logic (Frame Counter)
+
+            #Drowsiness Logic 
             if fatigue_data:
                 ear = fatigue_data['avg_ear']
                 
@@ -103,6 +104,22 @@ def main():
                 drowsy_frame_count = 0
                 is_drowsy = False
 
+            # Log Data to DB (After all metrics are calculated)
+            if posture_metrics and fatigue_data and emotion_data:
+                # Calculate slouching based on dynamic baseline
+                baseline = posture_metrics.get('baseline', config.SLOUCH_ANGLE_THRESHOLD)
+                threshold = baseline - config.SLOUCH_THRESHOLD_MARGIN
+                is_slouching = posture_metrics['neck_angle'] < threshold
+
+                data_uploader.log_data(
+                    neck_angle=posture_metrics['neck_angle'],
+                    is_slouching=is_slouching,
+                    ear_value=fatigue_data['avg_ear'],
+                    is_drowsy=is_drowsy,
+                    emotion=emotion_data['dominant_emotion'],
+                    emotion_confidence=emotion_data['confidence']
+                )
+
             image = visualizer.draw_dashboard(image, posture_metrics, fatigue_data, emotion_data, calibration_mode=False, is_drowsy=is_drowsy)
 
 
@@ -117,6 +134,7 @@ def main():
             print(f"An error occurred: {e}")
             break
 
+    data_uploader.end_session()
     cap.release()
     cv2.destroyAllWindows()
 
