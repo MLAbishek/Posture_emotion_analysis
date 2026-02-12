@@ -3,10 +3,13 @@ import math
 
 def calculate_angle(a, b, c):
     """
+
     Calculates the angle between three points a, b, and c.
     a, b, c are (x, y) tuples or arrays.
     b is the vertex.
     Returns angle in degrees.
+
+
     """
     a = np.array(a) # First
     b = np.array(b) # Mid
@@ -14,7 +17,7 @@ def calculate_angle(a, b, c):
     
     radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
     angle = np.abs(radians*180.0/np.pi)
-    
+    #For angle scaling
     if angle > 180.0:
         angle = 360-angle
         
