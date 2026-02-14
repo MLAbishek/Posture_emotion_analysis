@@ -36,7 +36,7 @@ Then you should query the schema of the most relevant tables.
     top_k=5
 )
 llm=ChatGroq(
-    model_name="openai/gpt-oss-120b",
+    model_name="llama-3.3-70b-versatile",
     api_key=os.environ["GROQ_API_KEY"],
     temperature=0, 
 )
