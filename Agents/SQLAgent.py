@@ -49,6 +49,5 @@ agent = create_sql_agent(
     verbose=True,
     agent_executor_kwargs={"handle_parsing_errors": True}
 )
-
-agent.invoke({"input": "display log details"})
-
+def sqlagent(query):
+    return agent.invoke({"input": query})
