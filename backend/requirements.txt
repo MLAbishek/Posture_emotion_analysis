@@ -1,0 +1,6 @@
+opencv-python
+mediapipe
+numpy
+sqlalchemy
+psycopg2-binary
+python-dotenv
