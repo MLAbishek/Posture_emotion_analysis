@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, Float, String, Boolean, DateTime, ForeignKey, create_engine
-from sqlalchemy.orm import declarative_base, relationship, Session
+from sqlalchemy.orm import declarative_base, Session
 from db_config import SessionLocal, engine
 
 Base = declarative_base()

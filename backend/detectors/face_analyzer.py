@@ -69,7 +69,7 @@ class FaceAnalyzer:
         # Convert to a dictionary for easier access {category_name: score}
         scores = {b.category_name: b.score for b in bs_list}
         
-        # Simple Logic for basic emotions
+        #Logic for basic emotions
         # 1. Happiness: mouthSmileLeft + mouthSmileRight
         happiness = (scores.get('mouthSmileLeft', 0) + scores.get('mouthSmileRight', 0)) / 2.0
         

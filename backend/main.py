@@ -8,7 +8,7 @@ from utils.DataUploader import DataUploader
 
 def main():
     # Initialize Camera
-    cap = cv2.VideoCapture(config.CAMERA_ID)
+    cap = cv2.VideoCapture(config.CAMERA_ID,cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.FRAME_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.FRAME_HEIGHT)
 
@@ -30,7 +30,7 @@ def main():
     is_calibrated = False
     calibration_mode = True
     
-    
+
     drowsy_frame_count = 0
     is_drowsy = False
 

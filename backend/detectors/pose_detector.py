@@ -78,12 +78,12 @@ class PoseDetector:
         r_ear = get_coords(lm[8])
         l_hip = get_coords(lm[23])
         nose = get_coords(lm[0])
-
+        r_hip = get_coords(lm[24])
         # Calculate angles
         # Left side
         neck_angle_l = calculate_angle(l_ear, l_shoulder, l_hip)
         # Right side
-        neck_angle_r = calculate_angle(r_ear, r_shoulder, get_coords(lm[24])) # 24: right_hip
+        neck_angle_r = calculate_angle(r_ear, r_shoulder, r_hip)
 
         avg_neck_angle = (neck_angle_l + neck_angle_r) / 2
         
